@@ -94,9 +94,9 @@ module VkApi
 
     def request_can_be_executed_now?(time, token)
       !@@counter[token] || # no requests for this token
-      !@@counter[token].first || # times array for token is empty
-      time - @@counter[token].first > 1 || # third request executed more than a second ago
-      @@counter[token].length < REQUESTS_PER_SECOND # three requests per second rule
+        !@@counter[token].first || # times array for token is empty
+        time - @@counter[token].first > 1 || # third request executed more than a second ago
+        @@counter[token].length < REQUESTS_PER_SECOND # three requests per second rule
     end
 
     def update_counter(time, token)
@@ -120,8 +120,8 @@ module VkApi
     # * params: параметры запроса
     def sig(params)
       Digest::MD5::hexdigest(
-      params.keys.sort.map{|key| "#{key}=#{params[key]}"}.join +
-      api_secret)
+        params.keys.sort.map{|key| "#{key}=#{params[key]}"}.join +
+          api_secret)
     end
 
     # Генерирует методы, необходимые для делегирования методов ВКонтакте, так friends,
@@ -155,7 +155,14 @@ module VkApi
   class ServerError < Error
     attr_accessor :session, :method, :params, :error
     def initialize(session, method, params, error)
-      super "Server side error calling VK method: #{error}"
+      super(<<~MSG)
+        VK server side error
+        method: #{method}
+        params:
+        #{params.pretty_inspect}
+        error:
+        #{error.pretty_inspect}
+      MSG
       @session, @method, @params, @error = session, method, params, error
     end
   end
