@@ -158,10 +158,10 @@ module VkApi
       super(<<~MSG)
         VK server side error
         method: #{method}
-        params:
-        #{params.pretty_inspect}
         error:
         #{error.pretty_inspect}
+        params:
+        #{params.pretty_inspect}
       MSG
       @session, @method, @params, @error = session, method, params, error
     end
