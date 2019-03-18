@@ -28,16 +28,10 @@ module VkApi
 
 
   class Session
-    REQUESTS_PER_SECOND = 3
     VK_API_URL = 'https://api.vk.com'
     VK_OBJECTS = %w(users friends photos wall audio video places secure language notes pages offers
       questions messages newsfeed status polls subscriptions likes)
     attr_accessor :app_id, :api_secret
-
-    @@counter = {}
-    # Counter schema: {"token1" => [time11, time12, time13], 'token2' => [time21, time22, time23], ...}
-    # "time" stores in Unix time
-    # "token" comes from request
 
     # Конструктор. Получает следующие аргументы:
     # * app_id: ID приложения ВКонтакте.
@@ -74,46 +68,12 @@ module VkApi
       @http.use_ssl = true
       @request = Net::HTTP::Post.new(uri.request_uri)
       @request.set_form_data(params)
-      response = execute_request(Time.now.to_f, token)
+      response = FrequencyControl.call(token) do
+        JSON.parse(@http.request(@request).body)
+      end
 
       raise ServerError.new self, method, params, response['error'] if response['error']
       response['response']
-    end
-
-    def execute_request(time, token)
-      @@counter[token] = [] unless @@counter[token]
-      if request_can_be_executed_now?(time, token)
-        update_counter(time, token)
-        JSON.parse(@http.request(@request).body)
-      else
-        sleep(1)
-        update_counter(time + 1, token)
-        JSON.parse(@http.request(@request).body)
-      end
-    end
-
-    def request_can_be_executed_now?(time, token)
-      !@@counter[token] || # no requests for this token
-        !@@counter[token].first || # times array for token is empty
-        time - @@counter[token].first > 1 || # third request executed more than a second ago
-        @@counter[token].length < REQUESTS_PER_SECOND # three requests per second rule
-    end
-
-    def update_counter(time, token)
-      if @@counter.nil? || @@counter.empty?
-        @@counter = { token => [time] }
-      else
-        if @@counter[token].nil?
-          @@counter[token] = [time]
-        else
-          if @@counter[token].length < REQUESTS_PER_SECOND
-            @@counter[token] << time
-          else
-            @@counter[token] << time
-            @@counter[token] = @@counter[token].drop(1)
-          end
-        end
-      end
     end
 
     # Генерирует подпись запроса
@@ -165,6 +125,63 @@ module VkApi
       MSG
       @session, @method, @params, @error = session, method, params, error
     end
+  end
+
+  class FrequencyControl
+
+    REQUESTS_PER_SECOND = 3
+
+    @@counter = {}
+    # Counter schema: {"token1" => [time11, time12, time13], 'token2' => [time21, time22, time23], ...}
+    # "time" stores in Unix time
+    # "token" comes from request
+
+    class << self
+
+      def call(token)
+        control_frequency(Time.now.to_f, token) do
+          yield
+        end
+      end
+
+      def control_frequency(time, token)
+        @@counter[token] = [] unless @@counter[token]
+        if request_can_be_executed_now?(time, token)
+          update_counter(time, token)
+          yield
+        else
+          sleep(1)
+          update_counter(time + 1, token)
+          yield
+        end
+      end
+
+      def request_can_be_executed_now?(time, token)
+        !@@counter[token] || # no requests for this token
+          !@@counter[token].first || # times array for token is empty
+          time - @@counter[token].first > 1 || # third request executed more than a second ago
+          @@counter[token].length < REQUESTS_PER_SECOND # three requests per second rule
+      end
+
+      def update_counter(time, token)
+        if @@counter.nil? || @@counter.empty?
+          @@counter = { token => [time] }
+        else
+          if @@counter[token].nil?
+            @@counter[token] = [time]
+          else
+            if @@counter[token].length < REQUESTS_PER_SECOND
+              @@counter[token] << time
+            else
+              @@counter[token] << time
+              @@counter[token] = @@counter[token].drop(1)
+            end
+          end
+        end
+      end
+
+    end
+
   end
 
 end
