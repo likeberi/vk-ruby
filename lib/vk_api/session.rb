@@ -36,8 +36,10 @@ module VkApi
     # Конструктор. Получает следующие аргументы:
     # * app_id: ID приложения ВКонтакте.
     # * api_secret: Ключ приложения со страницы настроек
-    def initialize app_id, api_secret, method_prefix = nil
+    # * frequency_control [#call(&block)]
+    def initialize(app_id, api_secret, method_prefix = nil, frequency_control: FrequencyControl)
       @app_id, @api_secret, @prefix = app_id, api_secret, method_prefix
+      @frequency_control = frequency_control
     end
 
 
@@ -68,7 +70,7 @@ module VkApi
       @http.use_ssl = true
       @request = Net::HTTP::Post.new(uri.request_uri)
       @request.set_form_data(params)
-      response = FrequencyControl.call(token) do
+      response = @frequency_control.call(token) do
         JSON.parse(@http.request(@request).body)
       end
 
