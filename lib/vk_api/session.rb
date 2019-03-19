@@ -49,6 +49,7 @@ module VkApi
     # Возвращаемое значение: хэш с результатами вызова.
     # Генерируемые исключения: +ServerError+ если сервер ВКонтакте вернул ошибку.
     def call(method, params = {})
+      params = params.clone
       method = method.to_s.camelize(:lower)
       method = @prefix ? "#{@prefix}.#{method}" : method
       params[:method] = method
