@@ -52,18 +52,17 @@ module VkApi
       params = params.clone
       method = method.to_s.camelize(:lower)
       method = @prefix ? "#{@prefix}.#{method}" : method
-      params[:method] = method
       token = params[:access_token] || ''
       params[:api_id] = app_id
       params[:format] = 'json'
       params[:sig] = sig(params.tap do |s|
         # stringify keys
-        s.keys.each {|k| s[k.to_s] = s.delete k  }
+        s.keys.each { |k| s[k.to_s] = s.delete k }
       end)
 
       # http://vk.com/developers.php?oid=-1&p=%D0%92%D1%8B%D0%BF%D0%BE%D0%BB%D0%BD%D0%B5%D0%BD%D0%B8%D0%B5_%D0%B7%D0%B0%D0%BF%D1%80%D0%BE%D1%81%D0%BE%D0%B2_%D0%BA_API
       # now VK requires the following url: https://api.vk.com/method/METHOD_NAME
-      path = VK_API_URL + "/method/#{method.gsub('.', '')}"
+      path = VK_API_URL + "/method/#{method}"
       uri = URI.parse(path)
 
       # build Post request to VK (using https)
