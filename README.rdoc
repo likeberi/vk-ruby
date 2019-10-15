@@ -2,15 +2,14 @@
 
 == Описание
 
-Библиотека VkApi имеет один значимый класс - <tt>VK:Session</tt>. После создания экземпляра сессии
-вы можете вызывать методы ВКонтакте как будто это методы сессии, например:
-  session = ::VkApi::Session.new app_id, api_secret
-  session.friends.get :uid => 12
+Библиотека VkApi имеет один значимый класс - <tt>VK:Session</tt>
+  session = ::VkApi::Session.new app_id, api_secret, 'friends'
+  session.call('get', :uid => 12)
 Такой вызов вернёт вам массив хэшей в виде:
   => [{'uid' => '123'}, {:uid => '321'}]
 Обратите внимание, что названия вызываемых методов оформлены в стиле Ruby. Т.е. для вызова likes.getList
 API VKontakte вам необходимо выполнить следующий код:
-  session.likes.get_list :page_url => "http://site.ru/", :type => 'sitepage'
+  session.call('get_list', :page_url => "http://site.ru/", :type => 'sitepage')
 
 == Установка
   gem install vk_api
