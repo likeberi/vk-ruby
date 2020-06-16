@@ -52,50 +52,50 @@ describe VkApi do
   describe VkApi::FrequencyControl do
     describe 'request_can_be_executed_now?' do
       it 'should return true if counter is empty' do
-        session = VkApi::FrequencyControl
+        freq_control = VkApi::FrequencyControl
         VkApi::FrequencyControl.instance_variable_set(:@counter, {})
-        expect(session.request_can_be_executed_now?('time', 'token')).to eq true
+        expect(freq_control.request_can_be_executed_now?('time', 'token')).to eq true
       end
 
       it 'should return true if no requests for current second' do
-        session = VkApi::FrequencyControl
+        freq_control = VkApi::FrequencyControl
         VkApi::FrequencyControl.instance_variable_set(:@counter, 'token' => [Time.now.to_f - 2])
-        expect(session.request_can_be_executed_now?('time', Time.now.to_f)).to eq true
+        expect(freq_control.request_can_be_executed_now?('time', Time.now.to_f)).to eq true
       end
 
       it 'should return true if less than 3 requests for current second executed' do
-        session = VkApi::FrequencyControl
+        freq_control = VkApi::FrequencyControl
         time = Time.now.to_f
         VkApi::FrequencyControl.instance_variable_set(:@counter, 'token' => [time, time])
-        expect(session.request_can_be_executed_now?(time, 'token')).to eq true
+        expect(freq_control.request_can_be_executed_now?(time, 'token')).to eq true
       end
 
       it 'should return false if 3 requests for current second executed' do
-        session = VkApi::FrequencyControl
+        freq_control = VkApi::FrequencyControl
         time = Time.now.to_f
         VkApi::FrequencyControl.instance_variable_set(:@counter, 'token' => [time, time, time])
-        expect(session.request_can_be_executed_now?(time, 'token')).to eq false
+        expect(freq_control.request_can_be_executed_now?(time, 'token')).to eq false
       end
     end
 
     describe 'update_counter' do
       it 'should set current time if counter is empty' do
-        session = VkApi::FrequencyControl
+        freq_control = VkApi::FrequencyControl
         time = Time.now.to_f
         VkApi::FrequencyControl.instance_variable_set(:@counter, {})
-        session.update_counter(time, 'token')
+        freq_control.update_counter(time, 'token')
         expect(VkApi::FrequencyControl.instance_variable_get(:@counter)).to eq 'token' => [time]
 
         VkApi::FrequencyControl.instance_variable_set(:@counter, nil)
-        session.update_counter(time, 'token')
+        freq_control.update_counter(time, 'token')
         expect(VkApi::FrequencyControl.instance_variable_get(:@counter)).to eq 'token' => [time]
       end
 
       it 'should set first time to token if no token in current time' do
         time = Time.now.to_i
         VkApi::FrequencyControl.instance_variable_set(:@counter, 'token0' => [time])
-        session = VkApi::FrequencyControl
-        session.update_counter(time, 'token1')
+        freq_control = VkApi::FrequencyControl
+        freq_control.update_counter(time, 'token1')
 
         expect(VkApi::FrequencyControl.instance_variable_get(:@counter))
           .to eq 'token0' => [time], 'token1' => [time]
@@ -104,8 +104,8 @@ describe VkApi do
       it 'should add time to token if token exists' do
         time = Time.now.to_f
         VkApi::FrequencyControl.instance_variable_set(:@counter, 'token' => [time - 1, time])
-        session = VkApi::FrequencyControl
-        session.update_counter(time, 'token')
+        freq_control = VkApi::FrequencyControl
+        freq_control.update_counter(time, 'token')
 
         expect(VkApi::FrequencyControl.instance_variable_get(:@counter))
           .to eq 'token' => [time - 1, time, time]

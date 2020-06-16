@@ -15,7 +15,7 @@ module VkApi
 
     VK_API_URL = 'https://api.vk.com'
 
-    # @option [#call(String) => void] delay request if needed
+    # @option frequency_control [#call(String) => void] delay request if needed
     def initialize(app_id, api_secret, method_prefix = nil, frequency_control: FrequencyControl)
       @app_id = app_id
       @api_secret = api_secret
