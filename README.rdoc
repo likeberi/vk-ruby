@@ -14,6 +14,9 @@ API VKontakte вам необходимо выполнить следующий 
 == Установка
   gem install vk_api
 
+== Тесты
+  bundle exec rspec
+
 == Лицензия
 
 Copyright (c) 2011 Nikolay Karev

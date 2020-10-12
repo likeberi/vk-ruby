@@ -35,7 +35,7 @@ module VkApi
         raise VkApi::Error, "Response isn't json: #{body}"
       end
 
-      raise ServerError.new self, method, params, response['error'] if response['error']
+      raise ServerError.new self, method, params, response if response['error']
 
       response['response']
     end
