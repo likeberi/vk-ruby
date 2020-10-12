@@ -8,9 +8,9 @@ module VkApi
   # Server side error
   class ServerError < Error
 
-    attr_accessor :session, :method, :params, :response
+    attr_accessor :session, :method, :params, :response, :url
 
-    def initialize(session, method, params, response)
+    def initialize(session, method, params, response, request_url)
       super(<<~MSG)
         VK server side error
         method: #{method}
@@ -23,6 +23,7 @@ module VkApi
       @method = method
       @params = params
       @response = response
+      @url = request_url
     end
 
     def error
