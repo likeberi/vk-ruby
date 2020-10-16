@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'pp'
+
 module VkApi
 
   # Base class
